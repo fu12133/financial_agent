@@ -1,0 +1,78 @@
+.quality-report-card {
+  margin-bottom: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.overall-score {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 20px;
+}
+
+.score-circle {
+  text-align: center;
+}
+
+.grade-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.grade-letter {
+  font-size: 48px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.grade-score {
+  font-size: 18px;
+  color: #666;
+  margin-top: 8px;
+}
+
+.pass-status {
+  flex: 1;
+  max-width: 400px;
+}
+
+.dimension-scores {
+  margin-top: 20px;
+}
+
+.dimensions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.dimension-item {
+  padding: 12px;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.dimension-name {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.dimension-score-text {
+  text-align: right;
+  font-size: 14px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.issues-section,
+.recommendations-section {
+  margin-top: 20px;
+}
+
+.issue-item,
+.recommendation-item {
+  padding: 8px 12px;
+}

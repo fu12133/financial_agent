@@ -1,0 +1,237 @@
+.chat-page {
+  max-width: 40vw;
+  margin: 0 auto;
+  min-height: calc(100vh - 130px);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-card {
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  border: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.chat-card :global(.ant-card-body) {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+
+.messages-container {
+  flex: 1;
+  overflow-y: visible;
+  overflow-x: visible;
+  padding: 20px;
+  padding-bottom: 20px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  position: relative;
+
+}
+
+.messages-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #f5f5f5;
+  border-radius: 8px;
+  z-index: -1;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.empty-state h3 {
+  margin: 20px 0 10px;
+  color: #333;
+}
+
+.suggestions {
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.message-item {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: flex-start;
+  background: transparent !important;
+  position: relative;
+  overflow: hidden;
+  transform: translateZ(0);
+  -webkit-font-smoothing: subpixel-antialiased;
+
+}
+
+.message-item::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: transparent;
+}
+
+.message-item.user {
+  background: white;
+  flex-direction: row-reverse;
+}
+
+.message-item.assistant {
+  background: white;
+
+}
+
+.message-item.thinking {
+  background: linear-gradient(90deg, #f0f5ff 0%, #e6f7ff 50%, #f0f5ff 100%) !important;
+  background-size: 200% 100% !important;
+  animation: shimmer 2s ease-in-out infinite;
+  border: 1px solid #d6e4ff;
+  border-radius: 12px;
+  padding: 16px 20px;
+  min-height: 56px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.message-content {
+  margin: 0 12px;
+  flex: 1;
+  max-width: 100%;
+  width: 100%;
+
+}
+
+.message-text {
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.message-time {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
+.thinking-message {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.thinking-message .ant-spin {
+  color: #1890ff;
+  font-size: 18px;
+}
+
+.thinking-message span {
+  color: #1890ff;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.input-area {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.input-area textarea {
+  flex: 1;
+}
+
+.input-area button {
+  height: auto;
+  min-height: 40px;
+}
+
+/* 新闻列表样式 */
+.news-list-container {
+  max-height: none;
+  overflow-y: visible;
+}
+
+.news-list-container .ant-list-item {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.news-list-container .ant-list-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.news-list-container .ant-list-item-meta-title {
+  margin-bottom: 8px;
+}
+
+.news-list-container .ant-btn {
+  transition: all 0.3s ease;
+}
+
+.news-list-container .ant-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 分析结果样式 */
+.analysis-result-container {
+  max-width: 100%;
+  max-height: none;
+  overflow-y: visible;
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.analysis-result-container .ant-collapse {
+  background: transparent;
+}
+
+.analysis-result-container .ant-collapse-content-box {
+  padding: 16px;
+}
+
+.analysis-result-container .ant-card {
+  margin-bottom: 0;
+}
+
+.analysis-result-container .storyline-container {
+  margin-bottom: 0;
+}

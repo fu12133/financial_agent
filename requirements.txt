@@ -1,0 +1,97 @@
+# ============================================================================
+# Financial Agent V1 - Python Dependencies
+# ============================================================================
+# Last Updated: April 27, 2026
+# Python Version: 3.10+
+# ============================================================================
+
+# ===== Core Backend Framework =====
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+pydantic-settings==2.1.0
+python-multipart==0.0.6
+
+# ===== Database & Vector Storage =====
+pymilvus>=2.3.0,<2.4.0
+pymysql>=1.1.0
+sqlalchemy>=2.0.0
+
+# ===== AI/ML & Embeddings =====
+# BGE-M3 embedding model dependencies
+torch>=2.0.0,<2.2.0
+transformers>=4.35.0,<4.40.0
+sentence-transformers>=2.2.0,<3.0.0
+FlagEmbedding==1.4.0
+rank-bm25>=0.2.0,<0.3.0
+
+# ===== LLM Clients =====
+# Cloud LLM (Alibaba DashScope)
+dashscope>=1.14.0,<2.0.0
+
+# Local LLM (Ollama integration)
+ollama>=0.1.0,<1.0.0
+
+# ===== HTTP & API Clients =====
+requests>=2.31.0,<3.0.0
+httpx>=0.26.0,<0.27.0
+aiohttp>=3.9.0,<4.0.0
+
+# ===== Environment & Configuration =====
+python-dotenv>=1.0.0,<2.0.0
+
+# ===== Data Processing =====
+pyarrow>=14.0.0,<16.0.0
+numpy>=1.24.0,<2.0.0
+pandas>=2.0.0,<3.0.0
+
+# ===== Logging & Monitoring =====
+loguru>=0.7.0,<1.0.0
+
+# ===== Utilities =====
+python-dateutil>=2.8.0
+pyyaml>=6.0.0,<7.0.0
+typing-extensions>=4.8.0
+
+# ===== Development & Testing =====
+pytest>=7.4.0,<8.0.0
+pytest-asyncio>=0.23.0,<0.24.0
+pytest-cov>=4.1.0
+black>=23.0.0,<25.0.0
+flake8>=6.0.0,<8.0.0
+isort>=5.12.0
+
+# ===== Optional: GPU Acceleration =====
+# Uncomment if using CUDA
+# cupy-cuda11x>=12.0.0  # For CUDA 11.x
+# cupy-cuda12x>=12.0.0  # For CUDA 12.x
+
+# ===== Optional: Performance Monitoring =====
+# prometheus-client>=0.19.0
+# psutil>=5.9.0
+
+# ===== Notes =====
+#
+# Installation:
+#   pip install -r requirements.txt
+#
+# For production, consider using:
+#   pip install --no-cache-dir -r requirements.txt
+#
+# To freeze exact versions after testing:
+#   pip freeze > requirements-prod.txt
+#
+# GPU Support:
+#   If using NVIDIA GPU, ensure compatible CUDA version is installed
+#   PyTorch will automatically detect and use GPU if available
+#
+# Version Compatibility:
+#   - FastAPI 0.109+ requires Pydantic 2.x
+#   - FlagEmbedding 1.4.0 is tested and stable
+#   - Milvus client 2.3.x is compatible with Milvus server 2.3+
+#
+# Known Issues:
+#   - sentence-transformers may have conflicts with newer transformers
+#   - Pin versions if encountering compatibility issues
+#
+# ============================================================================

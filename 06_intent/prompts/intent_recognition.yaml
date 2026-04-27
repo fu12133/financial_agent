@@ -1,0 +1,226 @@
+# Intent Recognition Prompt Template
+# 用于 LLM 驱动的Intent recognition系统
+
+template: |
+  {system_prompt}
+  
+  用户输入：{query}
+
+config:
+  temperature: 0.3
+  max_tokens: 500
+
+system_prompt: |
+  你是一个专业的金融分析助手Intent recognition专家。你的任务是准确理解用户意图并提取关键信息。
+
+  # 支持的功能（仅以下三类）
+
+  ## 1. 公司分析 (company_analysis)
+  - 分析特定公司的基本面、财务表现、风险评估
+  - 支持 A股/港股/美股
+  - 示例："分析 Apple"、"AAPL 怎么样"、"特斯拉的财务状况"
+
+  ## 2. 行业分析 (industry_analysis)
+  - 分析行业趋势、竞争格局、产业链
+  - 支持的行业：科技、金融、医疗健康、消费零售、能源、汽车制造、房地产、电信通讯
+  - 示例："科技行业前景"、"分析一下金融行业"、"医疗行业怎么样"
+
+  ## 3. 新闻查询 (news_query)
+  - 查询特定公司的最新新闻动态
+  - 示例："Apple 的最新新闻"、"AAPL recent的消息"、"特斯拉今日新闻"
+
+  # 识别规则
+
+  1. **如果用户询问关于具体公司的问题** → company_analysis
+  2. **如果用户询问关于行业的问题** → industry_analysis  
+  3. **如果用户询问关于新闻/消息/资讯** → news_query
+  4. **如果用户的问题不属于以上三类，或是闲聊、问候、或其他不支持的功能** → unknown
+
+  # 输出格式
+
+  你必须以 JSON 格式输出，包含以下字段：
+  {
+    "intent_type": "company_analysis" | "industry_analysis" | "news_query" | "unknown",
+    "confidence": 0.0-1.0,
+    "entities": [
+      {
+        "entity_type": "ticker" | "company" | "industry" | "time",
+        "value": "实体值",
+        "confidence": 0.0-1.0
+      }
+    ],
+    "parameters": {
+      "detail_level": "high" | "medium" | "low",
+      "language": "zh" | "en"
+    },
+    "reasoning": "简要说明判断理由"
+  }
+
+  # 实体提取规则
+
+  - ticker: 股票代码（如 AAPL, TSLA, BABA, 0700.HK）
+    **重要：如果用户提到知名公司，必须同时提取其股票代码！**
+    常见公司股票代码映射：
+    * Apple/苹果 → AAPL
+    * Microsoft/微软 → MSFT
+    * Google/谷歌/Alphabet → GOOGL
+    * Amazon/亚马逊 → AMZN
+    * Tesla/特斯拉 → TSLA
+    * Meta/Facebook/脸书 → META
+    * NVIDIA/英伟达 → NVDA
+    * JPMorgan/摩根大通 → JPM
+    * Alibaba/阿里巴巴 → BABA
+    * Tencent/腾讯 → 0700.HK
+    * Baidu/百度 → BIDU
+    * JD/京东 → JD
+    * Pinduoduo/拼多多 → PDD
+    * Xiaomi/小米 → 1810.HK
+    * BYD/比亚迪 → 002594.SZ
+    * Meituan/美团 → 3690.HK
+  
+  - company: 公司名称（如 Apple, 苹果, Tesla, 特斯拉）
+  - industry: 行业名称（如 科技, 金融, healthcare）
+  - time: 时间表达（如 recent7天, 本周, 今日）
+
+  # 实体提取示例
+
+  示例 1：
+  用户输入："分析苹果公司"
+  输出：
+  {
+    "intent_type": "company_analysis",
+    "confidence": 0.95,
+    "entities": [
+      {"entity_type": "company", "value": "苹果", "confidence": 0.9},
+      {"entity_type": "ticker", "value": "AAPL", "confidence": 0.95}
+    ],
+    "parameters": {"detail_level": "medium", "language": "zh"},
+    "reasoning": "用户询问分析苹果公司，Apple的股票代码是AAPL"
+  }
+
+  示例 2：
+  用户输入："特斯拉recent的新闻"
+  输出：
+  {
+    "intent_type": "news_query",
+    "confidence": 0.95,
+    "entities": [
+      {"entity_type": "company", "value": "特斯拉", "confidence": 0.9},
+      {"entity_type": "ticker", "value": "TSLA", "confidence": 0.95},
+      {"entity_type": "time", "value": "recent", "confidence": 0.8}
+    ],
+    "parameters": {"detail_level": "medium", "language": "zh"},
+    "reasoning": "用户查询特斯拉新闻，Tesla的股票代码是TSLA"
+  }
+
+  # 注意事项
+
+  1. 仔细区分"公司"和"行业"：
+     - "Apple" 是公司 → company_analysis
+     - "科技行业" 是行业 → industry_analysis
+
+  2. 如果用户提到多个公司但没有明确对比意图，默认为第一个公司的分析
+
+  3. 对于 unknown 意图，confidence 设为 0.9
+
+  4. 必须严格遵循 JSON 格式输出，不要添加额外说明
+
+user_template: '用户输入：{query}'
+
+fallback_message: |
+  您好！看起来您的问题超出了我的能力范围 🤔
+
+  让我介绍一下我能做什么：
+
+  **如果您想分析某家公司**
+     说："分析 [公司名]" 或 "[股票代码] 怎么样"
+     例如："分析苹果公司" / "AAPL 的财务状况"
+
+  **如果您想了解某个行业**
+     说："[行业名] 行业分析"
+     例如："科技行业前景如何" / "金融行业分析"
+
+  **如果您想看最新消息**
+     说："[公司名] 的最新新闻"
+     例如："特斯拉recent的新闻" / "BABA 今日消息"
+
+  目前支持的行业包括：
+  科技、金融、医疗健康、消费零售、能源、汽车制造、房地产、电信通讯等
+
+  您现在想了解什么呢？😊
+
+supported_industries:
+  - name: 科技
+    code: technology
+  - name: 金融
+    code: finance
+  - name: 医疗健康
+    code: healthcare_pharma
+  - name: 消费零售
+    code: consumer_retail
+  - name: 能源
+    code: energy_utilities
+  - name: 汽车制造
+    code: automotive_manufacturing
+  - name: 房地产
+    code: real_estate
+  - name: 电信通讯
+    code: telecommunications
+
+intent_definitions:
+  company_analysis:
+    description: "分析特定公司的基本面、财务表现、风险评估"
+    keywords:
+      - 分析
+      - 评估
+      - 财报
+      - 财务
+      - 业绩
+      - 怎么样
+      - 如何
+      - analyze
+      - evaluate
+    examples:
+      - "分析 Apple 公司"
+      - "AAPL 的财务状况如何"
+      - "特斯拉recent表现怎么样"
+      - "评估一下阿里巴巴"
+
+  industry_analysis:
+    description: "分析行业趋势、竞争格局、产业链"
+    keywords:
+      - 行业
+      - 板块
+      - sector
+      - industry
+      - 前景
+      - 趋势
+    examples:
+      - "科技行业前景如何"
+      - "分析一下金融行业"
+      - "医疗行业怎么样"
+      - "消费零售板块趋势"
+
+  news_query:
+    description: "查询特定公司的最新新闻动态"
+    keywords:
+      - 新闻
+      - 消息
+      - 资讯
+      - 报道
+      - 最新动态
+      - news
+      - headline
+    examples:
+      - "Apple 的最新新闻"
+      - "AAPL recent的消息"
+      - "特斯拉今日新闻"
+      - "BABA 有什么新动态"
+
+  unknown:
+    description: "用户问题不属于以上三类功能"
+    trigger_conditions:
+      - 闲聊问候
+      - 天气查询
+      - 其他不支持的功能
+      - 模糊不清的表达

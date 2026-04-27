@@ -1,0 +1,74 @@
+.storyline-card {
+  margin-bottom: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.storyline-summary {
+  padding: 16px;
+  background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.timeline-section {
+  margin-top: 20px;
+}
+
+.timeline-item {
+  padding: 8px 0;
+}
+
+.timeline-date {
+  font-weight: bold;
+  color: #667eea;
+  margin-bottom: 4px;
+}
+
+.timeline-event {
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+.timeline-impact {
+  margin-bottom: 8px;
+}
+
+.timeline-sources {
+  margin-top: 8px;
+}
+
+.storyline-details {
+  margin-top: 20px;
+}
+
+.detail-item {
+  margin-bottom: 20px;
+}
+
+.players-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.storyline-sources {
+  margin-top: 20px;
+}
+
+.sources-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.source-link {
+  color: #667eea;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+
+.source-link:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}

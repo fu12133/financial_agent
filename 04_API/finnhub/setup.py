@@ -1,0 +1,26 @@
+# coding: utf-8
+
+from setuptools import setup, find_packages  # noqa: H301
+
+NAME = "finnhub-python"
+VERSION = "2.4.27"
+REQUIRES = ["requests >= 2.22.0"]
+
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
+setup(
+    name=NAME,
+    version=VERSION,
+    description="Finnhub 04_API",
+    author="Finnhub",
+    author_email="support@finnhub.io",
+    url="https://finnhub.io/docs/api",
+    keywords=["finnhub", "Finnhub 04_API", "api"],
+    install_requires=REQUIRES,
+    packages=find_packages(exclude=["test", "13_tests"]),
+    include_package_data=True,
+    license="Apache-2.0",
+    long_description=long_description,
+    long_description_content_type="text/markdown"
+)

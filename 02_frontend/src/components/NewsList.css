@@ -1,0 +1,35 @@
+.news-list-card {
+  margin-bottom: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.news-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.news-headline {
+  font-size: 16px;
+  flex: 1;
+}
+
+.news-tags {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.news-meta {
+  color: #666;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.news-summary {
+  margin-top: 8px;
+  color: #333;
+}

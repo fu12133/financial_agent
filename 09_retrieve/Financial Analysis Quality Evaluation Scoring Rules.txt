@@ -1,0 +1,743 @@
+================================================================================
+         Financial Analysis Quality Evaluation System - Scoring Rules
+================================================================================
+
+Document Version: 1.0
+Last Updated: 2026-04-27
+Applicable To: Company Analysis & Industry Analysis Quality Evaluation
+
+================================================================================
+Table of Contents
+================================================================================
+
+1. Evaluation System Overview
+2. Six Evaluation Dimensions and Weights
+3. Completeness Scoring Rules - 20%
+4. Traceability Scoring Rules - 25%
+5. Consistency Scoring Rules - 20%
+6. Depth Scoring Rules - 15%
+7. Timeliness Scoring Rules - 10%
+8. Balance Scoring Rules - 10%
+9. Grade Classification Standards
+10. Scoring Calculation Examples
+
+================================================================================
+1. Evaluation System Overview
+================================================================================
+
+This evaluation system employs a multi-dimensional weighted scoring mechanism 
+to comprehensively assess the quality of financial analysis reports. The 
+evaluation is rule-based and automated, without relying on external tools.
+
+Evaluation Targets:
+  - Company Analysis Reports
+  - Industry Analysis Reports
+
+Scoring Range: 0-100 points
+Output Format: Detailed dimension scores + Overall score + Improvement suggestions
+
+================================================================================
+2. Six Evaluation Dimensions and Weights
+================================================================================
+
+Dimension                  Weight    Max Score    Description
+─────────────────────────────────────────────────────────────────────────────
+Completeness                20%        100        All required fields present
+Traceability                25%        100        URL citation coverage & quality
+Consistency                 20%        100        Score logical consistency
+Depth                       15%        100        Analysis detail & insightfulness
+Timeliness                  10%        100        Data recency
+Balance                     10%        100        Positive/negative balance
+
+Overall Score Formula:
+  Overall Score = Completeness × 0.20 
+                + Traceability × 0.25 
+                + Consistency × 0.20 
+                + Depth × 0.15 
+                + Timeliness × 0.10 
+                + Balance × 0.10
+
+================================================================================
+3. Completeness Scoring Rules - 20%
+================================================================================
+
+Base Score: 100 points
+Deduction Mechanism: Cumulative deductions for missing items
+Minimum Score: 0 points (no negative scores)
+
+--------------------------------------------------------------------------------
+3.1 Basic Fields Check (5 points deducted per missing field)
+--------------------------------------------------------------------------------
+
+Required Fields:
+  ✓ analysis_date         - Analysis date
+  ✓ analysis_period       - Analysis period
+  ✓ total_news_analyzed   - Total number of news analyzed
+
+Deduction Examples:
+  - Missing analysis_date: deduct 5 points
+  - Missing analysis_period and total_news_analyzed: deduct 10 points
+
+--------------------------------------------------------------------------------
+3.2 Storyline Completeness Check
+--------------------------------------------------------------------------------
+
+Storyline Required Fields:
+  ✓ summary          - Summary (200-400 characters)
+  ✓ key_events       - Key events list
+  ✓ timeline         - Timeline description
+  ✓ source_urls      - Source URLs list
+
+Deduction Rules:
+  - Completely missing storyline field: deduct 15 points
+  - Each missing sub-field within storyline: deduct 5 points
+
+Examples:
+  - Missing storyline.summary: deduct 5 points
+  - Missing storyline.key_events and timeline: deduct 10 points
+
+--------------------------------------------------------------------------------
+3.3 Analysis Dimension Completeness Check
+--------------------------------------------------------------------------------
+
+[Company Analysis] Required Dimensions (6):
+  1. financial_impact      - Financial impact
+  2. operational_impact    - Operational impact
+  3. market_impact         - Market impact
+  4. regulatory_impact     - Regulatory impact
+  5. strategic_impact      - Strategic impact
+  6. future_outlook        - Future outlook
+
+[Industry Analysis] Required Dimensions (6):
+  1. industry_trend            - Industry trend
+  2. competitive_landscape     - Competitive landscape
+  3. policy_regulatory         - Policy & regulatory
+  4. supply_chain_ecosystem    - Supply chain ecosystem
+  5. investment_attractiveness - Investment attractiveness
+  6. future_outlook            - Future outlook
+
+Required Fields for Each Dimension:
+  ✓ score        - Score (integer, -10 to 10)
+  ✓ analysis     - Analysis text (100-200 words)
+  ✓ source_urls  - Source URLs list (at least 2-3)
+
+Deduction Rules:
+  - Completely missing one dimension: deduct 10 points
+  - Each missing required field within dimension: deduct 3 points
+
+Examples:
+  - Missing financial_impact dimension: deduct 10 points
+  - financial_impact missing score and source_urls: deduct 6 points
+
+--------------------------------------------------------------------------------
+3.4 Overall Assessment Completeness Check
+--------------------------------------------------------------------------------
+
+Required Fields:
+  ✓ total_score    - Total score (sum of all dimension scores)
+  ✓ recommendation - Recommendation (Buy/Hold/Sell, etc.)
+  ✓ confidence     - Confidence (0-1 float)
+  ✓ summary        - Overall summary
+  ✓ key_insights   - Key insights list (at least 3)
+
+Deduction Rules:
+  - Each missing field: deduct 3 points
+
+--------------------------------------------------------------------------------
+3.5 Improvement Suggestion Trigger Conditions
+--------------------------------------------------------------------------------
+
+Trigger Condition:
+  - If present dimensions < 4
+
+Generated Suggestion:
+  "Recommend including at least 4+ analysis dimensions"
+
+--------------------------------------------------------------------------------
+3.6 Output Metrics
+--------------------------------------------------------------------------------
+
+Return Data Structure:
+  {
+    'score': 85,                      # Final score
+    'max_score': 100,                 # Maximum score
+    'present_dimensions': 6,          # Actual dimensions present
+    'expected_dimensions': 6,         # Expected dimensions
+    'issues': [...],                  # Issues list
+    'recommendations': [...]          # Recommendations list
+  }
+
+================================================================================
+4. Traceability Scoring Rules - 25%
+================================================================================
+
+Base Score: 100 points
+Deduction Mechanism: Cumulative deductions based on URL coverage
+Minimum Score: 0 points
+
+--------------------------------------------------------------------------------
+4.1 URL Coverage Check
+--------------------------------------------------------------------------------
+
+[Company Analysis] Dimensions Checked (8):
+  storyline, financial_impact, operational_impact, market_impact,
+  regulatory_impact, strategic_impact, future_outlook, overall_assessment
+
+[Industry Analysis] Dimensions Checked (8):
+  storyline, industry_trend, competitive_landscape, policy_regulatory,
+  supply_chain_ecosystem, investment_attractiveness, future_outlook, 
+  overall_assessment
+
+Deduction Rules:
+  - Dimension missing source_urls field or empty list: deduct 10 points per dimension
+  - URL count < 2: deduct 5 points (recommend at least 2-3)
+
+Examples:
+  - financial_impact has no source_urls: deduct 10 points
+  - market_impact has only 1 URL: deduct 5 points
+
+--------------------------------------------------------------------------------
+4.2 URL Coverage Rate Calculation
+--------------------------------------------------------------------------------
+
+Formula:
+  Coverage Rate = (Dimensions with URLs / Total Dimensions) × 100%
+
+Improvement Suggestion Trigger Conditions:
+  - Coverage < 80%: Generate suggestion "URL coverage is only X%, target should be >80%"
+  - Total URLs < 10: Generate suggestion "Total URL count (X) is low, recommend at least 15-20"
+
+Note: Low coverage generates suggestions but does not directly deduct points
+
+--------------------------------------------------------------------------------
+4.3 Text Citation Annotation Check
+--------------------------------------------------------------------------------
+
+Check Content:
+  Whether each dimension's analysis text contains citation annotations
+  
+Valid Annotation Formats:
+  - [参考来源: URL]
+  - [Source: URL]
+
+Deduction Rules:
+  - If less than 50% of dimensions have text citation annotations: deduct 10 points
+
+Examples:
+  - Only 3 out of 8 dimensions have [Source: URL] annotations: deduct 10 points
+  - 5 out of 8 dimensions have annotations: no deduction
+
+--------------------------------------------------------------------------------
+4.4 Output Metrics
+--------------------------------------------------------------------------------
+
+Return Data Structure:
+  {
+    'score': 90,                          # Final score
+    'max_score': 100,                     # Maximum score
+    'url_coverage_rate': 87.5,            # URL coverage rate (%)
+    'dimensions_with_urls': 7,            # Dimensions with URLs
+    'total_dimensions': 8,                # Total dimensions
+    'total_urls': 24,                     # Total URLs
+    'avg_urls_per_dimension': 3.0,        # Average URLs per dimension
+    'url_citations_in_text': 6,           # Citations in text
+    'issues': [...],                      # Issues list
+    'recommendations': [...]              # Recommendations list
+  }
+
+================================================================================
+5. Consistency Scoring Rules - 20%
+================================================================================
+
+Base Score: 100 points
+Deduction Mechanism: Cumulative deductions for logical inconsistencies
+Minimum Score: 0 points
+
+--------------------------------------------------------------------------------
+5.1 Dimension Score Range Check
+--------------------------------------------------------------------------------
+
+Valid Range: -10 to +10 (inclusive)
+
+Deduction Rules:
+  - Score is not numeric type (int/float): deduct 10 points
+  - Score < -10 or > 10: deduct 10 points
+
+Examples:
+  - financial_impact.score = "high" (string): deduct 10 points
+  - market_impact.score = 15 (out of range): deduct 10 points
+  - operational_impact.score = -5 (valid): no deduction
+
+--------------------------------------------------------------------------------
+5.2 Total Score Consistency Check
+--------------------------------------------------------------------------------
+
+Calculate Expected Total:
+  Expected Total = Sum(All dimension scores)
+
+Tolerance Calculation:
+  Tolerance = max(|Expected Total| × 0.15, 10)
+
+Validation Rule:
+  |total_score - expected_total| ≤ tolerance
+
+Deduction Rules:
+  - Difference exceeds tolerance: deduct 15 points
+  - total_score outside reasonable range [-num_dims×10, num_dims×10]: deduct 10 points
+
+Example 1 (Pass):
+  - 6 dimension scores: 2, 1, 3, 0, 1, 0
+  - Expected Total = 7
+  - Tolerance = max(7 × 0.15, 10) = max(1.05, 10) = 10
+  - If total_score = 8, then |8 - 7| = 1 < 10 ✓ Pass
+
+Example 2 (Fail):
+  - 6 dimension scores: 2, 1, 3, 0, 1, 0
+  - Expected Total = 7
+  - Tolerance = 10
+  - If total_score = 25, then |25 - 7| = 18 > 10 ✗ Deduct 15 points
+
+Example 3 (Range Check):
+  - 6 dimensions, reasonable range: [-60, 60]
+  - If total_score = 70, out of range ✗ Deduct 10 points
+
+--------------------------------------------------------------------------------
+5.3 Confidence Range Check
+--------------------------------------------------------------------------------
+
+Valid Range: 0 to 1 (inclusive)
+
+Deduction Rules:
+  - Not numeric type: deduct 5 points
+  - < 0 or > 1: deduct 10 points
+  - < 0.6: Generate suggestion (no deduction) "Low confidence (X.XX), recommend re-analysis"
+
+Examples:
+  - confidence = 0.85: ✓ Valid
+  - confidence = 1.5: ✗ Deduct 10 points
+  - confidence = 0.45: Generate suggestion, no deduction
+
+--------------------------------------------------------------------------------
+5.4 Recommendation Validity Check
+--------------------------------------------------------------------------------
+
+Valid Recommendation Values (case-insensitive):
+
+Chinese Recommendations:
+  - 买入 (Buy)
+  - 持有 (Hold)
+  - 卖出 (Sell)
+  - 超配 (Overweight)
+  - 标配 (Equal-weight)
+  - 低配 (Underweight)
+
+English Recommendations:
+  - buy
+  - hold
+  - sell
+  - overweight
+  - equal-weight
+  - underweight
+
+Deduction Rules:
+  - Recommendation not in valid list: deduct 5 points
+
+Examples:
+  - recommendation = "Buy": ✓ Valid
+  - recommendation = "Strong Buy": ✗ Deduct 5 points
+
+--------------------------------------------------------------------------------
+5.5 Output Metrics
+--------------------------------------------------------------------------------
+
+Return Data Structure:
+  {
+    'score': 95,                        # Final score
+    'max_score': 100,                   # Maximum score
+    'dimension_scores': [2, 1, 3, 0, 1, 0],  # Dimension scores
+    'dimension_scores_sum': 7,          # Sum of dimension scores
+    'issues': [...],                    # Issues list
+    'recommendations': [...]            # Recommendations list
+  }
+
+================================================================================
+6. Depth Scoring Rules - 15%
+================================================================================
+
+Base Score: 100 points
+Deduction Mechanism: Cumulative deductions for insufficient depth
+Minimum Score: 0 points
+
+--------------------------------------------------------------------------------
+6.1 Storyline Detail Check
+--------------------------------------------------------------------------------
+
+Storyline Summary Length Check:
+  - < 100 characters: deduct 10 points
+  - 100-200 characters: ✓ Acceptable
+  - 200-400 characters: ✓ Ideal
+  - > 500 characters: Generate suggestion (no deduction) "Storyline summary is long, consider condensing to 200-400 characters"
+
+Key Events Count Check:
+  - < 2 events: deduct 10 points
+  - 2-3 events: ✓ Minimum requirement
+  - 3-5 events: ✓ Ideal
+  - > 5 events: ✓ Excellent
+
+Examples:
+  - summary = "Brief" (20 characters): deduct 10 points
+  - key_events has only 1 event: deduct 10 points
+
+--------------------------------------------------------------------------------
+6.2 Dimension Analysis Word Count Check
+--------------------------------------------------------------------------------
+
+[Company Analysis] Dimensions Checked:
+  financial_impact, operational_impact, market_impact,
+  regulatory_impact, strategic_impact, future_outlook
+
+[Industry Analysis] Dimensions Checked:
+  industry_trend, competitive_landscape, policy_regulatory,
+  supply_chain_ecosystem, investment_attractiveness, future_outlook
+
+Check Standard:
+  - analysis text length < 50 characters: deduct 5 points per dimension
+
+Improvement Suggestion:
+  - If dimensions have short analyses: Generate suggestion "Each dimension analysis should be at least 100-200 words"
+
+Examples:
+  - financial_impact.analysis only 30 characters: deduct 5 points
+  - 3 dimensions with short analyses: deduct 15 points
+
+--------------------------------------------------------------------------------
+6.3 Key Insights Count Check
+--------------------------------------------------------------------------------
+
+Check Location: overall_assessment.key_insights
+
+Count Requirements:
+  - < 3 insights: deduct 10 points
+  - 3-5 insights: ✓ Ideal
+  - > 5 insights: ✓ Excellent
+
+Examples:
+  - key_insights has only 2: deduct 10 points
+  - key_insights has 4: ✓ Valid
+
+--------------------------------------------------------------------------------
+6.4 Future Outlook Phase Analysis Check
+--------------------------------------------------------------------------------
+
+Required Phase Analysis Fields:
+  ✓ short_term_impact   - Short-term impact (1-3 months)
+  ✓ medium_term_impact  - Medium-term impact (3-12 months)
+  ✓ long_term_impact    - Long-term impact (1-3 years)
+
+Deduction Rules:
+  - Each missing phase analysis: deduct 5 points
+
+Examples:
+  - Missing short_term_impact and long_term_impact: deduct 10 points
+  - All three phases present: ✓ Valid
+
+--------------------------------------------------------------------------------
+6.5 Output Metrics
+--------------------------------------------------------------------------------
+
+Return Data Structure:
+  {
+    'score': 80,                        # Final score
+    'max_score': 100,                   # Maximum score
+    'storyline_summary_length': 250,    # Storyline summary length
+    'key_events_count': 4,              # Key events count
+    'key_insights_count': 3,            # Key insights count
+    'issues': [...],                    # Issues list
+    'recommendations': [...]            # Recommendations list
+  }
+
+================================================================================
+7. Timeliness Scoring Rules - 10%
+================================================================================
+
+Base Score: 100 points
+Deduction Mechanism: Deductions based on data staleness
+Minimum Score: 0 points
+
+--------------------------------------------------------------------------------
+7.1 Analysis Date Check
+--------------------------------------------------------------------------------
+
+Date Format Requirement: YYYY-MM-DD
+
+Deduction Rules:
+  - Invalid date format: deduct 10 points
+  - More than 7 days old: deduct 20 points
+  - 4-7 days old: Generate suggestion (no deduction) "Analysis date is YYYY-MM-DD, recommend update"
+  - ≤ 3 days old: ✓ Valid
+
+Examples:
+  - analysis_date = "2026-04-20" (7 days ago): deduct 20 points
+  - analysis_date = "2026-04-25" (2 days ago): ✓ Valid
+  - analysis_date = "invalid": deduct 10 points
+
+--------------------------------------------------------------------------------
+7.2 Analysis Period Check
+--------------------------------------------------------------------------------
+
+Extract days from analysis_period field (e.g., "Past 7 days" extracts 7)
+
+Recommended Range: 7-90 days
+
+Improvement Suggestion Trigger Conditions:
+  - < 3 days: Generate suggestion "Analysis period is short (X days), recommend 7-30 days"
+  - > 90 days: Generate suggestion "Analysis period is long (X days), may contain outdated information"
+  - 3-7 days: ✓ Acceptable
+  - 7-90 days: ✓ Ideal
+
+Note: Inappropriate analysis period only generates suggestions, no direct deduction
+
+--------------------------------------------------------------------------------
+7.3 Output Metrics
+--------------------------------------------------------------------------------
+
+Return Data Structure:
+  {
+    'score': 100,                       # Final score
+    'max_score': 100,                   # Maximum score
+    'analysis_date': '2026-04-27',      # Analysis date
+    'issues': [...],                    # Issues list
+    'recommendations': [...]            # Recommendations list
+  }
+
+================================================================================
+8. Balance Scoring Rules - 10%
+================================================================================
+
+Base Score: 100 points
+Deduction Mechanism: Deductions based on analysis bias
+Minimum Score: 0 points
+
+--------------------------------------------------------------------------------
+8.1 Positive/Negative Score Distribution Check
+--------------------------------------------------------------------------------
+
+[Company Analysis] Dimensions Checked:
+  financial_impact, operational_impact, market_impact,
+  regulatory_impact, strategic_impact, future_outlook
+
+[Industry Analysis] Dimensions Checked:
+  industry_trend, competitive_landscape, policy_regulatory,
+  supply_chain_ecosystem, investment_attractiveness, future_outlook
+
+Score Classification:
+  - Positive: score > 2
+  - Neutral: -2 ≤ score ≤ 2
+  - Negative: score < -2
+
+Calculate Ratios:
+  positive_ratio = positive_count / total_scored
+  negative_ratio = negative_count / total_scored
+
+Deduction Rules:
+  - positive_ratio > 0.8 (too positive): deduct 10 points
+  - negative_ratio > 0.8 (too negative): deduct 10 points
+
+Example 1 (Too Positive):
+  - 6 dimension scores: 5, 7, 3, 2, 6, 4
+  - positive_count = 5, neutral_count = 1, negative_count = 0
+  - positive_ratio = 5/6 = 0.83 > 0.8
+  - Deduct 10 points, generate suggestion "Analysis is too positive, recommend adding risk warnings"
+
+Example 2 (Balanced):
+  - 6 dimension scores: 2, -1, 3, 0, -2, 1
+  - positive_count = 2, neutral_count = 3, negative_count = 1
+  - positive_ratio = 2/6 = 0.33, negative_ratio = 1/6 = 0.17
+  - ✓ Valid, no deduction
+
+--------------------------------------------------------------------------------
+8.2 Risk Analysis Check
+--------------------------------------------------------------------------------
+
+Check Location: future_outlook.risk_analysis
+
+Length Requirement: ≥ 30 characters
+
+Deduction Rules:
+  - Missing risk_analysis field or length < 30: deduct 10 points
+
+Improvement Suggestion:
+  - If risk analysis is insufficient: Generate suggestion "Missing detailed risk analysis"
+
+Examples:
+  - risk_analysis = "" (empty string): deduct 10 points
+  - risk_analysis = "Market risks exist" (20 characters): deduct 10 points
+  - risk_analysis = "Market volatility risks, policy change risks..." (>30 characters): ✓ Valid
+
+--------------------------------------------------------------------------------
+8.3 Output Metrics
+--------------------------------------------------------------------------------
+
+Return Data Structure:
+  {
+    'score': 90,                        # Final score
+    'max_score': 100,                   # Maximum score
+    'positive_dimensions': 2,           # Positive dimensions
+    'negative_dimensions': 1,           # Negative dimensions
+    'neutral_dimensions': 3,            # Neutral dimensions
+    'issues': [...],                    # Issues list
+    'recommendations': [...]            # Recommendations list
+  }
+
+================================================================================
+9. Grade Classification Standards
+================================================================================
+
+Score Range     Grade    Description
+─────────────────────────────────────────────────────────────────────────────
+90 - 100        A        Excellent - High quality, ready for use
+80 - 89         B        Good - Good quality, minor improvements needed
+70 - 79         C        Average - Acceptable, some improvements needed
+60 - 69         D        Pass - Barely usable, significant improvements needed
+< 60            F        Fail - Poor quality, needs re-analysis
+
+================================================================================
+10. Scoring Calculation Examples
+================================================================================
+
+--------------------------------------------------------------------------------
+Example 1: High-Quality Company Analysis Report
+--------------------------------------------------------------------------------
+
+Assumed Evaluation Results:
+  - Completeness:  95 points (missing 1 small field)
+  - Traceability:  90 points (URL coverage 87.5%)
+  - Consistency:   100 points (fully consistent)
+  - Depth:         85 points (some analyses slightly short)
+  - Timeliness:    100 points (analyzed today)
+  - Balance:       90 points (slight bias but has risk analysis)
+
+Overall Score Calculation:
+  Overall = 95 × 0.20 + 90 × 0.25 + 100 × 0.20 + 85 × 0.15 + 100 × 0.10 + 90 × 0.10
+          = 19.0 + 22.5 + 20.0 + 12.75 + 10.0 + 9.0
+          = 93.25 points
+
+Grade: A (Excellent)
+
+--------------------------------------------------------------------------------
+Example 2: Medium-Quality Industry Analysis Report
+--------------------------------------------------------------------------------
+
+Assumed Evaluation Results:
+  - Completeness:  75 points (missing 2 dimensions)
+  - Traceability:  70 points (URL coverage 62.5%)
+  - Consistency:   85 points (total_score slightly off)
+  - Depth:         80 points (storyline slightly short)
+  - Timeliness:    80 points (5-day-old analysis)
+  - Balance:       100 points (good balance)
+
+Overall Score Calculation:
+  Overall = 75 × 0.20 + 70 × 0.25 + 85 × 0.20 + 80 × 0.15 + 80 × 0.10 + 100 × 0.10
+          = 15.0 + 17.5 + 17.0 + 12.0 + 8.0 + 10.0
+          = 79.5 points
+
+Grade: C (Average)
+
+--------------------------------------------------------------------------------
+Example 3: Low-Quality Analysis Report
+--------------------------------------------------------------------------------
+
+Assumed Evaluation Results:
+  - Completeness:  50 points (missing multiple dimensions and fields)
+  - Traceability:  40 points (URL coverage 37.5%)
+  - Consistency:   60 points (score inconsistency)
+  - Depth:         55 points (all analyses very short)
+  - Timeliness:    80 points (5-day-old analysis)
+  - Balance:       70 points (too positive)
+
+Overall Score Calculation:
+  Overall = 50 × 0.20 + 40 × 0.25 + 60 × 0.20 + 55 × 0.15 + 80 × 0.10 + 70 × 0.10
+          = 10.0 + 10.0 + 12.0 + 8.25 + 8.0 + 7.0
+          = 55.25 points
+
+Grade: F (Fail)
+
+================================================================================
+Appendix A: Common Issues and Solutions
+================================================================================
+
+Issue 1: Low Completeness Score
+  Cause: Missing required fields or dimensions
+  Solution: Ensure all required fields and dimensions are present, each dimension 
+            includes score, analysis, source_urls
+
+Issue 2: Low Traceability Score
+  Cause: Insufficient URLs or missing citation annotations
+  Solution: Provide at least 2-3 URLs per dimension, use [Source: URL] annotations 
+            in analysis text
+
+Issue 3: Low Consistency Score
+  Cause: total_score inconsistent with sum of dimension scores
+  Solution: Ensure total_score = sum(all dimension scores), allow 15% or 10 point 
+            tolerance
+
+Issue 4: Low Depth Score
+  Cause: Analysis text too short or missing key content
+  Solution: Each dimension analysis at least 100-200 words, storyline summary 
+            200-400 characters, provide 3-5 key_insights
+
+Issue 5: Low Timeliness Score
+  Cause: Analysis date too old
+  Solution: Use latest news data for analysis, ensure analysis date within 3 days
+
+Issue 6: Low Balance Score
+  Cause: Analysis too biased toward positive or negative
+  Solution: Objectively analyze both sides, provide detailed risk analysis 
+            (at least 30 characters)
+
+================================================================================
+Appendix B: Quick Reference Table for Scoring Rules
+================================================================================
+
+Dimension       Base    Main Deduction Items                    Min
+                Score                                           Score
+─────────────────────────────────────────────────────────────────────────────
+Completeness    100     Missing fields/dimensions               0
+Traceability    100     Low URL coverage/missing citations      0
+Consistency     100     Score range/logic errors                0
+Depth           100     Short analyses/missing content          0
+Timeliness      100     Old analysis date                       0
+Balance         100     Biased analysis/missing risk analysis   0
+
+================================================================================
+Appendix C: Dimension-Specific Scoring Guidelines (-10 to +10 Scale)
+================================================================================
+
+Positive Scores (Beneficial Impact):
+  +9 to +10: Exceptional positive impact - transformative growth, breakthrough 
+             achievements, major competitive advantages
+  +7 to +8:  Strong positive impact - significant revenue growth, market 
+             expansion, strategic wins
+  +5 to +6:  Moderate positive impact - steady improvement, incremental gains, 
+             favorable trends
+  +3 to +4:  Mild positive impact - slight improvements, minor benefits, 
+             small opportunities
+  +1 to +2:  Minimal positive impact - negligible benefits, marginal improvements
+
+Neutral Score:
+  0:         No significant impact or mixed effects that cancel out
+
+Negative Scores (Detrimental Impact):
+  -1 to -2:  Minimal negative impact - slight concerns, minor setbacks
+  -3 to -4:  Mild negative impact - noticeable challenges, small losses, 
+             emerging risks
+  -5 to -6:  Moderate negative impact - significant headwinds, measurable 
+             losses, concerning trends
+  -7 to -8:  Strong negative impact - serious problems, substantial losses, 
+             major threats
+  -9 to -10: Exceptional negative impact - crisis situation, catastrophic 
+             losses, existential threats
+
+================================================================================
+                              End of Document
+================================================================================

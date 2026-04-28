@@ -94,6 +94,13 @@ const DimensionCard: React.FC<DimensionCardProps> = ({
       <Divider />
 
       <div className="dimension-content">
+        {dimension.score_justification && (
+          <div className="score-justification">
+            <Title level={5}>📊 Score Justification</Title>
+            <Paragraph className="justification-text">{cleanAnalysisText(dimension.score_justification)}</Paragraph>
+          </div>
+        )}
+
         <Paragraph className="analysis-text">{cleanAnalysisText(dimension.analysis)}</Paragraph>
 
         {dimension.key_factors && dimension.key_factors.length > 0 && (

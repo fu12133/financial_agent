@@ -56,10 +56,10 @@ class UnifiedLLMClient:
         if self.use_cloud:
             # Cloud mode configuration
             self.max_tokens = int(os.getenv("CLOUD_LLM_MAX_TOKENS", "8192"))
-            self.api_key = api_key or os.getenv("DASHSCOPE_API_KEY")
+            self.api_key = api_key or os.getenv("OPENAI_COMPATIBLE_API_KEY")
 
             if not self.api_key:
-                raise ValueError("Cloud mode requires DASHSCOPE_API_KEY to be set")
+                raise ValueError("Cloud mode requires OPENAI_COMPATIBLE_API_KEY to be set")
 
             self._init_cloud_client()
         else:
@@ -85,29 +85,35 @@ class UnifiedLLMClient:
             return False
 
     def _init_cloud_client(self):
-        """Initialize cloud client"""
+        """Initialize cloud client using OpenAI compatible API"""
         try:
-            import dashscope
-            from dashscope import Generation
+            from openai import OpenAI
+            
+            # Get OpenAI compatible configuration
+            self.base_url = os.getenv("OPENAI_COMPATIBLE_BASE_URL", "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1")
+            self.api_key = self.api_key or os.getenv("OPENAI_COMPATIBLE_API_KEY")
 
-            dashscope.api_key = self.api_key
+            if not self.api_key:
+                raise ValueError("Cloud mode requires OPENAI_COMPATIBLE_API_KEY to be set")
+
+            # Initialize OpenAI client with custom base URL
+            self.openai_client = OpenAI(
+                base_url=self.base_url,
+                api_key=self.api_key
+            )
 
             # Test connection
-            response = Generation.call(
+            response = self.openai_client.chat.completions.create(
                 model=self.model,
                 messages=[{"role": "user", "content": "Hi"}],
                 max_tokens=5
             )
 
-            if response.status_code == 200:
-                logger.info(f"✅ Cloud model '{self.model}' ready")
-            else:
-                logger.warning(f"⚠️  Cloud model '{self.model}' may not be available: {response.message}")
-
-            self.cloud_generation = Generation
+            logger.info(f"✅ Cloud model '{self.model}' ready (OpenAI Compatible Mode)")
+            logger.info(f"   Base URL: {self.base_url}")
 
         except ImportError:
-            raise ImportError("Please install dashscope: pip install dashscope")
+            raise ImportError("Please install openai: pip install openai")
         except Exception as e:
             logger.error(f"❌ Cloud client initialization failed: {e}")
             raise
@@ -201,12 +207,20 @@ class UnifiedLLMClient:
         """Check if model is available"""
         if self.use_cloud:
             try:
-                response = self.cloud_generation.call(
+                import time
+                start_time = time.time()
+                
+                response = self.openai_client.chat.completions.create(
                     model=self.model,
                     messages=[{"role": "user", "content": "Hi"}],
-                    max_tokens=5
+                    max_tokens=5,
+                    timeout=10  # 10 second timeout
                 )
-                return response.status_code == 200
+                
+                elapsed = time.time() - start_time
+                logger.info(f"✅ Model availability check passed ({elapsed:.2f}s)")
+                
+                return response.choices is not None and len(response.choices) > 0
             except Exception as e:
                 logger.error(f"❌ Failed to check cloud model: {e}")
                 return False
@@ -242,7 +256,7 @@ class UnifiedLLMClient:
             return self._local_generate(prompt, temp, tokens)
 
     def _cloud_generate(self, prompt: str, temperature: float, max_tokens: int) -> Dict:
-        """Cloud generation"""
+        """Cloud generation using OpenAI compatible API"""
         max_retries = 3
         last_error = None
         
@@ -253,7 +267,7 @@ class UnifiedLLMClient:
                 else:
                     logger.info(f"📤 Calling cloud LLM: {self.model}")
 
-                response = self.cloud_generation.call(
+                response = self.openai_client.chat.completions.create(
                     model=self.model,
                     messages=[
                         {
@@ -267,15 +281,11 @@ class UnifiedLLMClient:
                     ],
                     temperature=temperature,
                     max_tokens=max_tokens,
-                    enable_thinking=False
+                    top_p=1.0,
+                    extra_body={"enable_thinking": False}
                 )
 
-                if response.status_code != 200:
-                    error_msg = f"API call failed: {response.code} - {response.message}"
-                    logger.error(f"❌ {error_msg}")
-                    return {"error": error_msg, "model": self.model}
-
-                content = response.output.text.strip()
+                content = response.choices[0].message.content.strip()
 
                 if not content:
                     logger.error("❌ LLM returned empty content")
@@ -312,69 +322,6 @@ class UnifiedLLMClient:
 
         return {"error": error_msg, "model": self.model}
 
-    def _local_generate(self, prompt: str, temperature: float, max_tokens: int) -> Dict:
-        """Local generation"""
-        try:
-            import torch
-
-            system_prompt = """You are a professional financial analyst. Please conduct 5-dimensional impact analysis. Directly output JSON format result, prohibit outputting any thinking, reasoning, analysis process, notes, explanatory text; prohibit redundant line breaks, extra descriptions, opening remarks, closing remarks; strictly follow specified JSON structure and field requirements, do not modify format or add supplements; all analysis based only on given news and background facts, objectively output final content."""
-
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt}
-            ]
-
-            text = self.tokenizer.apply_chat_template(
-                messages,
-                tokenize=False,
-                add_generation_prompt=True
-            )
-
-            inputs = self.tokenizer(text, return_tensors="pt").to(self.model_instance.device)
-            input_length = inputs.input_ids.shape[1]
-
-            logger.info(f"📤 Generating local LLM response...")
-
-            generation_config = self.GenerationConfig(
-                temperature=temperature,
-                max_new_tokens=max_tokens,
-                do_sample=True,
-                pad_token_id=self.tokenizer.eos_token_id,
-                eos_token_id=self.tokenizer.eos_token_id,
-                repetition_penalty=1.05,
-                top_p=0.95,
-                top_k=40
-            )
-
-            with torch.no_grad():
-                outputs = self.model_instance.generate(
-                    **inputs,
-                    generation_config=generation_config
-                )
-
-            generated_tokens = outputs[0][input_length:]
-            content = self.tokenizer.decode(generated_tokens, skip_special_tokens=True)
-
-            if not content or not content.strip():
-                logger.error("❌ LLM returned empty content")
-                return {"error": "LLM returned empty response", "model": self.model}
-
-            logger.info(f"✅ Local LLM response successful ({len(content)} characters)")
-
-            return {"raw_response": content.strip(), "model": self.model}
-
-        except Exception as e:
-            error_msg = str(e)
-            logger.error(f"❌ LLM call failed: {error_msg}")
-
-            if "out of memory" in error_msg.lower() or "cuda" in error_msg.lower():
-                logger.warning("⚠️  Insufficient VRAM")
-                logger.warning("💡 Suggestion: Use smaller model, reduce max_tokens, use CPU mode, or enable quantization")
-            elif "not found" in error_msg.lower():
-                logger.warning(f"⚠️  Model '{self.model}' not found")
-
-            return {"error": error_msg, "model": self.model}
-
     def chat(self, messages: list, temperature: float = None, max_tokens: int = None) -> str:
         """
         General chat interface
@@ -392,20 +339,16 @@ class UnifiedLLMClient:
 
         if self.use_cloud:
             try:
-                response = self.cloud_generation.call(
+                response = self.openai_client.chat.completions.create(
                     model=self.model,
                     messages=messages,
                     temperature=temp,
                     max_tokens=tokens,
-                    enable_thinking=False
+                    top_p=1.0,
+                    extra_body={"enable_thinking": False}
                 )
 
-                if response.status_code == 200:
-                    return response.output.text
-                else:
-                    error_msg = f"API call failed: {response.code} - {response.message}"
-                    logger.error(f"❌ Chat failed: {error_msg}")
-                    return f"Error: {error_msg}"
+                return response.choices[0].message.content
             except Exception as e:
                 logger.error(f"❌ Chat failed: {e}")
                 return f"Error: {e}"
@@ -425,7 +368,7 @@ class UnifiedLLMClient:
                 generation_config = self.GenerationConfig(
                     temperature=temp,
                     max_new_tokens=tokens,
-                    do_sample=True,
+                    do_sample=(temp > 0),
                     pad_token_id=self.tokenizer.eos_token_id,
                     eos_token_id=self.tokenizer.eos_token_id
                 )

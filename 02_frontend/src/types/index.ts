@@ -15,9 +15,10 @@ export interface Storyline {
   source_urls: string[]
 }
 
-// 影响分析维度
+// Impact analysis dimensions
 export interface ImpactDimension {
   score: number
+  score_justification?: string
   analysis: string
   key_factors: string[]
   source_urls: string[]
@@ -38,24 +39,37 @@ export interface FutureOutlook extends ImpactDimension {
   }
 }
 
-// 总体评估
+// Overall assessment
 export interface OverallAssessment {
   total_score: number
   recommendation: string
   confidence: number
+  confidence_justification?: string
   summary: string
   key_insights: string[]
   source_urls: string[]
 }
 
-// 完整分析结果
+// Complete analysis result
 export interface AnalysisResult {
+  // Storyline (common)
   storyline?: Storyline
+  
+  // Company analysis dimensions
   financial_impact?: ImpactDimension
   operational_impact?: ImpactDimension
   market_impact?: ImpactDimension
   regulatory_impact?: ImpactDimension
   strategic_impact?: ImpactDimension
+  
+  // Industry analysis dimensions
+  industry_trend?: ImpactDimension
+  competitive_landscape?: ImpactDimension
+  policy_regulatory?: ImpactDimension
+  supply_chain_ecosystem?: ImpactDimension
+  investment_attractiveness?: ImpactDimension
+  
+  // Common dimensions
   future_outlook?: FutureOutlook
   overall_assessment?: OverallAssessment
 }

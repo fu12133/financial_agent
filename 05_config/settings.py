@@ -63,8 +63,9 @@ class Config:
     
     # Cloud LLM Configuration
     QWEN_CLOUD_MODEL = os.getenv("QWEN_CLOUD_MODEL", "qwen-plus")
-    DASHSCOPE_API_KEY = os.getenv("DASHSCOPE_API_KEY", "")
-    
+    OPENAI_COMPATIBLE_BASE_URL = os.getenv("OPENAI_COMPATIBLE_BASE_URL", "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1")
+    OPENAI_COMPATIBLE_API_KEY = os.getenv("OPENAI_COMPATIBLE_API_KEY", "")
+
     # LLM Generation Configuration
     LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.1"))
     

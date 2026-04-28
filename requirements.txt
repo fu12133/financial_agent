@@ -26,11 +26,14 @@ FlagEmbedding==1.4.0
 rank-bm25>=0.2.0,<0.3.0
 
 # ===== LLM Clients =====
-# Cloud LLM (Alibaba DashScope)
-dashscope>=1.14.0,<2.0.0
+# Cloud LLM (OpenAI Compatible API - Aliyun Token Plan)
+openai>=1.0.0,<2.0.0
 
 # Local LLM (Ollama integration)
 ollama>=0.1.0,<1.0.0
+
+# OpenAI SDK (for compatible mode APIs)
+openai>=1.0.0,<2.0.0
 
 # ===== HTTP & API Clients =====
 requests>=2.31.0,<3.0.0

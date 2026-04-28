@@ -194,7 +194,8 @@ class FinancialAgent:
                 days=days,
                 use_cloud=self.use_cloud_llm,
                 device=self.device,
-                output_dir="output"
+                output_dir="output",
+                verbose=self.verbose
             )
 
             if result.get('success'):
@@ -249,7 +250,8 @@ class FinancialAgent:
                 days=days,
                 use_cloud=self.use_cloud_llm,
                 device=self.device,
-                output_dir="output"
+                output_dir="output",
+                verbose=self.verbose
             )
 
             self.state = AgentState.COMPLETED
@@ -612,9 +614,12 @@ class FinancialAgent:
                 {"role": "user", "content": user_message}
             ]
             
+            # Use temperature from environment variable (default 0.1)
+            temperature = float(os.getenv("LLM_TEMPERATURE", "0.1"))
+            
             content = self.rag.llm_client.chat(
                 messages=messages,
-                temperature=0.7,
+                temperature=temperature,
                 max_tokens=500
             )
             

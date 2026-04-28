@@ -109,33 +109,35 @@ def generate_enhanced_report(raw_data: dict, output_file: str = "enhanced_analys
         return None
 
 
-def analyze_company_and_generate_report(
-        company_name: str,
-        ticker: str = None,
+def generate_company_report(
+        ticker: str,
+        company_name: str = None,
         days: int = None,
         use_cloud: bool = None,
         model: str = None,
         device: str = None,
         use_quantization: bool = None,
-        output_dir: str = None
+        output_dir: str = None,
+        verbose: bool = False
 ) -> Dict:
     """
     Analyze company and generate complete report (supports cloud and local)
 
-    :param company_name: Company name (required), e.g., "Apple Inc."
-    :param ticker: Stock ticker (optional), e.g., "AAPL". If not provided, will use uppercase prefix of company name
+    :param ticker: Stock ticker (required), e.g., "AAPL"
+    :param company_name: Company name (optional), e.g., "Apple Inc.". If not provided, will use ticker
     :param days: Analysis days (optional), default read from .env
     :param use_cloud: Whether to use cloud model (None=auto detect, True=cloud, False=local)
     :param model: Model name (optional), cloud default "qwen-plus", local default read HF_MODEL_NAME from .env
-    :param device: Computing device ('cuda' or 'cpu', only for local mode)
-    :param use_quantization: Whether to use 4bit quantization (only for local mode, default True)
+    :param device: Device (optional), default 'cuda' or 'cpu'
+    :param use_quantization: Whether to use 4-bit quantization (optional), default True
     :param output_dir: Output root directory (default 11_report/output/)
-    :return: Dictionary containing analysis results
+    :param verbose: Whether to show detailed progress messages (default False)
+    :return: Complete analysis result dictionary
     """
-    # If ticker not provided, generate from company name
-    if not ticker:
-        ticker = company_name.upper().replace(" ", "_")[:10]
-        print(f"⚠️  Stock ticker not provided, using: {ticker}")
+    # If company_name not provided, generate from ticker
+    if not company_name:
+        company_name = ticker
+        print(f"⚠️  Company name not provided, using: {company_name}")
 
     # Set default output directory to 11_report/output/
     if output_dir is None:
@@ -147,7 +149,8 @@ def analyze_company_and_generate_report(
     
     # Ensure output directory exists
     os.makedirs(output_dir, exist_ok=True)
-    print(f"📁 Output root directory (absolute path): {output_dir}")
+    if verbose:
+        print(f"📁 Output root directory (absolute path): {output_dir}")
     
     # Create company-specific folder
     safe_ticker = ticker.replace("/", "_").replace("\\", "_")
@@ -155,7 +158,8 @@ def analyze_company_and_generate_report(
     company_folder = os.path.join(output_dir, f"{safe_ticker}_{safe_company_name}")
     
     os.makedirs(company_folder, exist_ok=True)
-    print(f"📁 Report will be saved to: {company_folder}")
+    if verbose:
+        print(f"📁 Report will be saved to: {company_folder}")
 
     mode_suffix = "cloud" if use_cloud else ("local" if use_cloud is False else "auto")
     raw_output_file = os.path.join(company_folder, f"company_analysis_{mode_suffix}.json")
@@ -163,9 +167,10 @@ def analyze_company_and_generate_report(
     prompt_file = os.path.join(company_folder, f"impact_analysis_prompt_{mode_suffix}.txt")
 
     mode_text = "Cloud" if use_cloud else ("Local" if use_cloud is False else "Auto")
-    print("=" * 70)
-    print(f"🚀 Starting analysis for company: {company_name} ({ticker}) [{mode_text} mode]")
-    print("=" * 70)
+    if verbose:
+        print("=" * 70)
+        print(f"🚀 Starting analysis for company: {company_name} ({ticker}) [{mode_text} mode]")
+        print("=" * 70)
 
     # Create RAG service
     rag = RAGService(device=device or 'cuda')
@@ -181,26 +186,31 @@ def analyze_company_and_generate_report(
         else:
             model_name = os.getenv("DEFAULT_LLM_MODEL", "qwen-plus")
 
-        print(f"\n📥 Initializing LLM...")
-        print(f"   Mode: {'Cloud' if use_cloud else ('Local' if use_cloud is False else 'Auto')}")
-        print(f"   Model: {model_name}")
+        if verbose:
+            print(f"\n📥 Initializing LLM...")
+            print(f"   Mode: {'Cloud' if use_cloud else ('Local' if use_cloud is False else 'Auto')}")
+            print(f"   Model: {model_name}")
 
-        if not use_cloud and use_cloud is not True:
-            device_to_use = device or ('cuda' if __import__('torch').cuda.is_available() else 'cpu')
-            print(f"   Device: {device_to_use}")
-            print(f"   Quantization: {'4bit' if use_quantization is None or use_quantization else 'FP16'}")
+            if not use_cloud and use_cloud is not True:
+                device_to_use = device or ('cuda' if __import__('torch').cuda.is_available() else 'cpu')
+                print(f"   Device: {device_to_use}")
+                print(f"   Quantization: {'4bit' if use_quantization is None or use_quantization else 'FP16'}")
 
         rag.initialize_llm(model=model_name, use_cloud=use_cloud)
-        print(f"✅ LLM ready")
+        if verbose:
+            print(f"✅ LLM ready")
 
     except Exception as e:
-        print(f"❌ LLM initialization failed: {e}")
+        if verbose:
+            print(f"❌ LLM initialization failed: {e}")
         import traceback
         traceback.print_exc()
         return {"error": str(e)}
 
     # Execute analysis
-    print(f"\n🔍 Starting analysis of {company_name} ({ticker})...")
+    if verbose:
+        print(f"\n🔍 Starting analysis of {company_name} ({ticker})...")
+    
     result = rag.analyze_company(
         ticker=ticker,
         company_name=company_name,
@@ -208,22 +218,25 @@ def analyze_company_and_generate_report(
     )
 
     # View results
-    print("\n" + "=" * 70)
-    print("📊 Analysis Results")
-    print("=" * 70)
+    if verbose:
+        print("\n" + "=" * 70)
+        print("📊 Analysis Results")
+        print("=" * 70)
 
     if 'error' in result:
-        print(f"❌ Analysis failed: {result['error']}")
+        if verbose:
+            print(f"❌ Analysis failed: {result['error']}")
         return result
 
-    print(f"\n📈 Company Overview:")
-    print(f"   Stock Ticker: {result['ticker']}")
-    print(f"   Company Name: {result['company_name']}")
-    print(f"   Number of news analyzed: {result['total_news']}")
+    if verbose:
+        print(f"\n📈 Company Overview:")
+        print(f"   Stock Ticker: {result['ticker']}")
+        print(f"   Company Name: {result['company_name']}")
+        print(f"   Number of news analyzed: {result['total_news']}")
 
     # Display news overview
     overview = result.get('news_overview', {})
-    if overview:
+    if overview and verbose:
         print(f"\n📰 News Overview:")
         print(f"   Event Types: {overview.get('event_types', {})}")
         print(f"   Sentiment Distribution: {overview.get('sentiments', {})}")
@@ -231,64 +244,73 @@ def analyze_company_and_generate_report(
     # Display LLM analysis results
     analysis = result.get('llm_analysis', {})
     
-    print(f"\n🔍 Debug Information:")
-    print(f"   result type: {type(result)}")
-    print(f"   llm_analysis type: {type(analysis)}")
-    print(f"   llm_analysis is empty: {not analysis}")
-    if isinstance(analysis, dict):
-        print(f"   llm_analysis keys: {list(analysis.keys())}")
-        print(f"   has error: {'error' in analysis}")
+    if verbose:
+        print(f"\n🔍 Debug Information:")
+        print(f"   result type: {type(result)}")
+        print(f"   llm_analysis type: {type(analysis)}")
+        print(f"   llm_analysis is empty: {not analysis}")
+        if isinstance(analysis, dict):
+            print(f"   llm_analysis keys: {list(analysis.keys())}")
+            print(f"   has error: {'error' in analysis}")
     
     if 'error' not in analysis and isinstance(analysis, dict) and analysis:
-        if 'financial_impact' in analysis:
-            fi = analysis['financial_impact']
-            print(f"\n💰 Financial Impact (Score: {fi.get('score', 'N/A')})")
-            print(f"   {fi.get('analysis', '')[:300]}")
+        if verbose:
+            if 'financial_impact' in analysis:
+                fi = analysis['financial_impact']
+                print(f"\n💰 Financial Impact (Score: {fi.get('score', 'N/A')})")
+                print(f"   {fi.get('analysis', '')[:300]}")
 
-        if 'market_impact' in analysis:
-            mi = analysis['market_impact']
-            print(f"\n📈 Market Impact (Score: {mi.get('score', 'N/A')})")
-            print(f"   {mi.get('analysis', '')[:300]}")
+            if 'market_impact' in analysis:
+                mi = analysis['market_impact']
+                print(f"\n📈 Market Impact (Score: {mi.get('score', 'N/A')})")
+                print(f"   {mi.get('analysis', '')[:300]}")
 
-        if 'overall_assessment' in analysis:
-            oa = analysis['overall_assessment']
-            print(f"\n🎯 Overall Assessment")
-            print(f"   Total Score: {oa.get('total_score', 'N/A')}")
-            print(f"   Recommendation: {oa.get('recommendation', 'N/A')}")
-            print(f"   Confidence: {oa.get('confidence', 'N/A')}")
-            print(f"   Summary: {oa.get('summary', '')[:300]}")
+            if 'overall_assessment' in analysis:
+                oa = analysis['overall_assessment']
+                print(f"\n🎯 Overall Assessment")
+                print(f"   Total Score: {oa.get('total_score', 'N/A')}")
+                print(f"   Recommendation: {oa.get('recommendation', 'N/A')}")
+                print(f"   Confidence: {oa.get('confidence', 'N/A')}")
+                print(f"   Summary: {oa.get('summary', '')[:300]}")
 
         # Save complete results
         try:
-            print(f"\n💾 Attempting to save raw data to: {raw_output_file}")
-            print(f"   Absolute path: {os.path.abspath(raw_output_file)}")
+            if verbose:
+                print(f"\n💾 Attempting to save raw data to: {raw_output_file}")
+                print(f"   Absolute path: {os.path.abspath(raw_output_file)}")
             
             with open(raw_output_file, 'w', encoding='utf-8') as f:
                 json.dump(result, f, indent=2, ensure_ascii=False)
             
             if os.path.exists(raw_output_file):
-                print(f"✅ Raw data saved: {raw_output_file}")
-                print(f"   File size: {os.path.getsize(raw_output_file)} bytes")
+                if verbose:
+                    print(f"✅ Raw data saved: {raw_output_file}")
+                    print(f"   File size: {os.path.getsize(raw_output_file)} bytes")
             else:
-                print(f"❌ File save failed, file does not exist: {raw_output_file}")
+                if verbose:
+                    print(f"❌ File save failed, file does not exist: {raw_output_file}")
         except Exception as e:
-            print(f"❌ Failed to save raw data: {e}")
+            if verbose:
+                print(f"❌ Failed to save raw data: {e}")
             import traceback
             traceback.print_exc()
 
         # Generate enhanced report
         try:
-            print(f"\n📝 Attempting to generate enhanced report to: {enhanced_output_file}")
+            if verbose:
+                print(f"\n📝 Attempting to generate enhanced report to: {enhanced_output_file}")
+            
             enhanced_report = generate_enhanced_report(
                 raw_data=result,
                 output_file=enhanced_output_file
             )
 
             if enhanced_report:
-                print(f"\n✅ Analysis complete!")
-                print(f"   Raw data: {raw_output_file}")
-                print(f"   Enhanced report: {enhanced_output_file}")
-                print(f"   Prompt file: {prompt_file}")
+                if verbose:
+                    print(f"\n✅ Analysis complete!")
+                    print(f"   Raw data: {raw_output_file}")
+                    print(f"   Enhanced report: {enhanced_output_file}")
+                    print(f"   Prompt file: {prompt_file}")
                 
                 # Build return result
                 result['report_path'] = enhanced_output_file
@@ -300,7 +322,8 @@ def analyze_company_and_generate_report(
                 if 'overall_assessment' in analysis:
                     result['summary'] = analysis['overall_assessment'].get('summary', '')
             else:
-                print(f"\n⚠️  Enhanced report generation failed")
+                if verbose:
+                    print(f"\n⚠️  Enhanced report generation failed")
                 result['report_path'] = raw_output_file
                 result['raw_data_path'] = raw_output_file
                 result['prompt_file'] = prompt_file
@@ -308,17 +331,19 @@ def analyze_company_and_generate_report(
                 if 'overall_assessment' in analysis:
                     result['summary'] = analysis['overall_assessment'].get('summary', '')
         except Exception as e:
-            print(f"❌ Failed to generate enhanced report: {e}")
+            if verbose:
+                print(f"❌ Failed to generate enhanced report: {e}")
             import traceback
             traceback.print_exc()
             result['success'] = False
     else:
-        print(f"\n❌ LLM analysis failed or empty")
-        if isinstance(analysis, dict):
-            print(f"   error: {analysis.get('error', 'Unknown')}")
-        else:
-            print(f"   analysis type: {type(analysis)}")
-            print(f"   analysis content: {str(analysis)[:200]}")
+        if verbose:
+            print(f"\n❌ LLM analysis failed or empty")
+            if isinstance(analysis, dict):
+                print(f"   error: {analysis.get('error', 'Unknown')}")
+            else:
+                print(f"   analysis type: {type(analysis)}")
+                print(f"   analysis content: {str(analysis)[:200]}")
         result['success'] = False
 
     return result
@@ -332,7 +357,8 @@ def generate_industry_report(
         model: str = None,
         device: str = None,
         use_quantization: bool = None,
-        output_dir: str = None
+        output_dir: str = None,
+        verbose: bool = False
 ) -> Dict:
     """
     Analyze industry and generate complete report (supports cloud and local)
@@ -342,10 +368,11 @@ def generate_industry_report(
     :param days: Analysis days (optional), default read from .env
     :param use_cloud: Whether to use cloud model (None=auto detect, True=cloud, False=local)
     :param model: Model name (optional), cloud default "qwen-plus", local default read HF_MODEL_NAME from .env
-    :param device: Computing device ('cuda' or 'cpu', only for local mode)
-    :param use_quantization: Whether to use 4bit quantization (only for local mode, default True)
+    :param device: Device (optional), default 'cuda' or 'cpu'
+    :param use_quantization: Whether to use 4-bit quantization (optional), default True
     :param output_dir: Output root directory (default 11_report/output/)
-    :return: Dictionary containing analysis results
+    :param verbose: Whether to show detailed progress messages (default False)
+    :return: Complete analysis result dictionary
     """
     # If industry_name not provided, use industry code
     if not industry_name:
@@ -363,7 +390,8 @@ def generate_industry_report(
     
     # Ensure output directory exists
     os.makedirs(output_dir, exist_ok=True)
-    print(f"📁 Output root directory (absolute path): {output_dir}")
+    if verbose:
+        print(f"📁 Output root directory (absolute path): {output_dir}")
     
     # Create industry-specific folder: 11_report/output/INDUSTRY_IndustryName/
     safe_industry = industry.replace("/", "_").replace("\\", "_")
@@ -372,7 +400,8 @@ def generate_industry_report(
     
     # Create output directory structure
     os.makedirs(industry_folder, exist_ok=True)
-    print(f"📁 Report will be saved to: {industry_folder}")
+    if verbose:
+        print(f"📁 Report will be saved to: {industry_folder}")
 
     # Generate output filenames (inside industry folder)
     mode_suffix = "cloud" if use_cloud else ("local" if use_cloud is False else "auto")
@@ -381,9 +410,10 @@ def generate_industry_report(
     prompt_file = os.path.join(industry_folder, f"impact_analysis_prompt_{mode_suffix}.txt")
 
     mode_text = "Cloud" if use_cloud else ("Local" if use_cloud is False else "Auto")
-    print("=" * 70)
-    print(f"🚀 Starting analysis for industry: {industry_name} ({industry}) [{mode_text} mode]")
-    print("=" * 70)
+    if verbose:
+        print("=" * 70)
+        print(f"🚀 Starting analysis for industry: {industry_name} ({industry}) [{mode_text} mode]")
+        print("=" * 70)
 
     # Create RAG service
     rag = RAGService(device=device or 'cuda')
@@ -399,50 +429,57 @@ def generate_industry_report(
         else:
             model_name = os.getenv("DEFAULT_LLM_MODEL", "qwen-plus")
 
-        print(f"\n📥 Initializing LLM...")
-        print(f"   Mode: {'Cloud' if use_cloud else ('Local' if use_cloud is False else 'Auto')}")
-        print(f"   Model: {model_name}")
+        if verbose:
+            print(f"\n📥 Initializing LLM...")
+            print(f"   Mode: {'Cloud' if use_cloud else ('Local' if use_cloud is False else 'Auto')}")
+            print(f"   Model: {model_name}")
 
-        if not use_cloud and use_cloud is not True:
-            device_to_use = device or ('cuda' if __import__('torch').cuda.is_available() else 'cpu')
-            print(f"   Device: {device_to_use}")
-            print(f"   Quantization: {'4bit' if use_quantization is None or use_quantization else 'FP16'}")
+            if not use_cloud and use_cloud is not True:
+                device_to_use = device or ('cuda' if __import__('torch').cuda.is_available() else 'cpu')
+                print(f"   Device: {device_to_use}")
+                print(f"   Quantization: {'4bit' if use_quantization is None or use_quantization else 'FP16'}")
 
         rag.initialize_llm(model=model_name, use_cloud=use_cloud)
-        print(f"✅ LLM ready")
+        if verbose:
+            print(f"✅ LLM ready")
 
     except Exception as e:
-        print(f"❌ LLM initialization failed: {e}")
+        if verbose:
+            print(f"❌ LLM initialization failed: {e}")
         import traceback
         traceback.print_exc()
         return {"error": str(e)}
 
     # Execute analysis
-    print(f"\n🔍 Starting analysis of {industry_name} ({industry})...")
-    result = rag.analyze_industry(
+    if verbose:
+        print(f"\n🔍 Starting analysis of {industry_name} ({industry})...")
+    result = rag.analyze_industry_comprehensive(
         industry=industry,
         industry_name=industry_name,
         days=days
     )
 
     # View results
-    print("\n" + "=" * 70)
-    print("📊 Analysis Results")
-    print("=" * 70)
+    if verbose:
+        print("\n" + "=" * 70)
+        print("📊 Analysis Results")
+        print("=" * 70)
 
     if 'error' in result:
-        print(f"❌ Analysis failed: {result['error']}")
+        if verbose:
+            print(f"❌ Analysis failed: {result['error']}")
         return result
 
-    print(f"\n📈 Industry Overview:")
-    print(f"   Industry Code: {result['industry']}")
-    print(f"   Industry Name: {result['industry_name']}")
-    print(f"   Number of news analyzed: {result['total_news']}")
-    print(f"   Companies covered: {', '.join(result.get('companies_covered', [])[:10])}")
+    if verbose:
+        print(f"\n📈 Industry Overview:")
+        print(f"   Industry Code: {result['industry']}")
+        print(f"   Industry Name: {result['industry_name']}")
+        print(f"   Number of news analyzed: {result['total_news']}")
+        print(f"   Companies covered: {', '.join(result.get('companies_covered', [])[:10])}")
 
     # Display news overview
     overview = result.get('news_overview', {})
-    if overview:
+    if overview and verbose:
         print(f"\n📰 News Overview:")
         print(f"   Event Types: {overview.get('event_types', {})}")
         print(f"   Sentiment Distribution: {overview.get('sentiments', {})}")
@@ -450,34 +487,52 @@ def generate_industry_report(
     # Display LLM analysis results
     analysis = result.get('llm_analysis', {})
     if 'error' not in analysis and isinstance(analysis, dict):
-        if 'industry_trend' in analysis:
-            it = analysis['industry_trend']
-            print(f"\n📊 Industry Trend (Score: {it.get('score', 'N/A')})")
-            print(f"   {it.get('analysis', '')[:300]}")
-            if it.get('source_urls'):
-                print(f"   🔗 Sources ({len(it['source_urls'])} items): {it['source_urls'][:2]}")
+        if verbose:
+            if 'industry_trend' in analysis:
+                it = analysis['industry_trend']
+                print(f"\n📊 Industry Trend (Score: {it.get('score', 'N/A')})")
+                print(f"   {it.get('analysis', '')[:300]}")
+                if it.get('source_urls'):
+                    print(f"   🔗 Sources ({len(it['source_urls'])} items): {it['source_urls'][:2]}")
 
-        if 'competitive_landscape' in analysis:
-            cl = analysis['competitive_landscape']
-            print(f"\n🏆 Competitive Landscape (Score: {cl.get('score', 'N/A')})")
-            print(f"   {cl.get('analysis', '')[:300]}")
+            if 'competitive_landscape' in analysis:
+                cl = analysis['competitive_landscape']
+                print(f"\n🏆 Competitive Landscape (Score: {cl.get('score', 'N/A')})")
+                print(f"   {cl.get('analysis', '')[:300]}")
 
-        if 'overall_assessment' in analysis:
-            oa = analysis['overall_assessment']
-            print(f"\n🎯 Overall Assessment")
-            print(f"   Total Score: {oa.get('total_score', 'N/A')}")
-            print(f"   Recommendation: {oa.get('recommendation', 'N/A')}")
-            print(f"   Confidence: {oa.get('confidence', 'N/A')}")
-            print(f"   Summary: {oa.get('summary', '')[:300]}")
-            if oa.get('key_insights'):
-                print(f"   Key Insights:")
-                for insight in oa['key_insights'][:3]:
-                    print(f"     - {insight}")
+            if 'overall_assessment' in analysis:
+                oa = analysis['overall_assessment']
+                print(f"\n🎯 Overall Assessment")
+                print(f"   Total Score: {oa.get('total_score', 'N/A')}")
+                print(f"   Recommendation: {oa.get('recommendation', 'N/A')}")
+                print(f"   Confidence: {oa.get('confidence', 'N/A')}")
+                print(f"   Summary: {oa.get('summary', '')[:300]}")
+                if oa.get('key_insights'):
+                    print(f"   Key Insights:")
+                    for insight in oa['key_insights'][:3]:
+                        print(f"     - {insight}")
 
         # Save complete results
-        with open(raw_output_file, 'w', encoding='utf-8') as f:
-            json.dump(result, f, indent=2, ensure_ascii=False)
-        print(f"\n💾 Complete results saved to: {raw_output_file}")
+        try:
+            if verbose:
+                print(f"\n💾 Attempting to save raw data to: {raw_output_file}")
+                print(f"   Absolute path: {os.path.abspath(raw_output_file)}")
+            
+            with open(raw_output_file, 'w', encoding='utf-8') as f:
+                json.dump(result, f, indent=2, ensure_ascii=False)
+            
+            if os.path.exists(raw_output_file):
+                if verbose:
+                    print(f"✅ Raw data saved: {raw_output_file}")
+                    print(f"   File size: {os.path.getsize(raw_output_file)} bytes")
+            else:
+                if verbose:
+                    print(f"❌ File save failed, file does not exist: {raw_output_file}")
+        except Exception as e:
+            if verbose:
+                print(f"❌ Failed to save raw data: {e}")
+            import traceback
+            traceback.print_exc()
 
         # Generate enhanced report (if needed)
         enhanced_output_file = os.path.join(industry_folder, f"enhanced_report_{mode_suffix}.json")
@@ -486,11 +541,12 @@ def generate_industry_report(
             output_file=enhanced_output_file
         )
 
-        print(f"\n✅ Analysis complete!")
-        print(f"   Raw data: {raw_output_file}")
-        if enhanced_report:
-            print(f"   Enhanced report: {enhanced_output_file}")
-        print(f"   Prompt file: {prompt_file}")
+        if verbose:
+            print(f"\n✅ Analysis complete!")
+            print(f"   Raw data: {raw_output_file}")
+            if enhanced_report:
+                print(f"   Enhanced report: {enhanced_output_file}")
+            print(f"   Prompt file: {prompt_file}")
         
         # Build return result
         result['report_path'] = enhanced_output_file if enhanced_report else raw_output_file
@@ -502,12 +558,18 @@ def generate_industry_report(
         if 'llm_analysis' in result and 'overall_assessment' in result['llm_analysis']:
             result['summary'] = result['llm_analysis']['overall_assessment'].get('summary', '')
     else:
-        print(f"\n❌ LLM analysis failed")
-        if isinstance(analysis, dict):
-            print(f"   error: {analysis.get('error', 'Unknown')}")
+        if verbose:
+            print(f"\n❌ LLM analysis failed")
+            if isinstance(analysis, dict):
+                print(f"   error: {analysis.get('error', 'Unknown')}")
         result['success'] = False
 
     return result
+
+
+# Backward compatibility aliases
+analyze_company_and_generate_report = generate_company_report
+analyze_industry_and_generate_report = generate_industry_report
 
 
 # Backward compatibility example function

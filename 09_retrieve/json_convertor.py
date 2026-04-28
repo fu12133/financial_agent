@@ -182,7 +182,11 @@ def extract_core_metrics(data: Dict[str, Any]) -> Dict[str, Any]:
 
 def extract_full_llm_analysis(data: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Extract complete LLM analysis result (parse raw_response directly)
+    Extract complete LLM analysis result
+    
+    Supports two formats:
+    1. With raw_response string (needs parsing)
+    2. Already parsed dictionary structure
 
     :param data: Raw data dictionary
     :return: Parsed complete LLM analysis result
@@ -191,10 +195,24 @@ def extract_full_llm_analysis(data: Dict[str, Any]) -> Dict[str, Any]:
         return {}
 
     llm_analysis = data.get("llm_analysis", {})
-
-    if llm_analysis and "raw_response" in llm_analysis:
-        # Parse raw_response string directly to JSON
+    
+    if not llm_analysis:
+        return {}
+    
+    # Case 1: If llm_analysis contains raw_response string, parse it
+    if isinstance(llm_analysis, dict) and "raw_response" in llm_analysis:
+        logger.info("📝 Found raw_response, parsing it...")
         return parse_llm_raw_response(llm_analysis["raw_response"])
+    
+    # Case 2: If llm_analysis is already a parsed dictionary with analysis structure
+    if isinstance(llm_analysis, dict) and ("storyline" in llm_analysis or "financial_impact" in llm_analysis):
+        logger.info("✅ LLM analysis already parsed, using directly")
+        return llm_analysis
+    
+    # Case 3: If llm_analysis itself is the parsed result
+    if isinstance(llm_analysis, dict):
+        logger.info("✅ Using llm_analysis as-is")
+        return llm_analysis
 
     return {}
 
@@ -280,7 +298,6 @@ def _print_analysis_result(raw_data: Dict[str, Any]):
     print("\n=== Latest Headline News (Top 5) ===")
     for idx, headline in enumerate(recent_headlines[:5], 1):
         print(f"{idx}. Title: {headline['headline']} | Time: {headline['time']} | Sentiment: {headline['sentiment']}")
-
 
 if __name__ == "__main__":
     main()

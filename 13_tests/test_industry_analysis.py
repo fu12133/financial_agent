@@ -57,7 +57,7 @@ def test_rag_service():
     rag.initialize_llm(model='qwen-plus', use_cloud=True)
     
     print("\nStarting technology industry analysis...")
-    result = rag.analyze_industry(
+    result = rag.analyze_industry_comprehensive(
         industry='technology',
         industry_name='Technology Industry',
         days=7

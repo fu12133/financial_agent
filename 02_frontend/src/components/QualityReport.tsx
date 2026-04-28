@@ -1,8 +1,10 @@
 import React from 'react'
-import { Card, Progress, Alert, List, Tag, Divider } from 'antd'
+import { Card, Progress, Alert, List, Tag, Divider, Typography } from 'antd'
 import { CheckCircleOutlined, WarningOutlined, CloseCircleOutlined } from '@ant-design/icons'
 import { QualityEvaluation } from '../types'
 import './QualityReport.css'
+
+const { Title, Paragraph, Text } = Typography
 
 interface QualityReportProps {
   evaluation: QualityEvaluation
@@ -30,7 +32,10 @@ const QualityReport: React.FC<QualityReportProps> = ({ evaluation }) => {
   }
 
   return (
-    <Card className="quality-report-card" title="📊 Quality Evaluation Report">
+    <Card className="quality-report-card">
+      <Title level={4}>Quality Evaluation Report</Title>
+      <Paragraph type="secondary">Analysis quality assessment summary</Paragraph>
+
       <div className="overall-score">
         <div className="score-circle">
           <Progress
@@ -72,19 +77,93 @@ const QualityReport: React.FC<QualityReportProps> = ({ evaluation }) => {
       <Divider />
 
       <div className="dimension-scores">
-        <h4>Dimension Scores</h4>
-        <div className="dimensions-grid">
-          {Object.entries(evaluation.dimensions).map(([key, value]: [string, any]) => (
-            <div key={key} className="dimension-item">
-              <div className="dimension-name">{dimensionNames[key] || key}</div>
-              <Progress
-                percent={value.score}
-                status={value.score >= 80 ? 'success' : value.score >= 60 ? 'normal' : 'exception'}
-                size="small"
-              />
-              <div className="dimension-score-text">{value.score.toFixed(0)} points</div>
-            </div>
-          ))}
+        <Title level={5}>Dimension Scores</Title>
+        <div className="dimensions-list" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {Object.entries(evaluation.dimensions).map(([key, value]: [string, any]) => {
+            const percentage = value.score
+            const statusColor = percentage >= 80 ? '#52c41a' : percentage >= 60 ? '#1890ff' : '#ff4d4f'
+
+            return (
+              <div key={key} className="dimension-item" style={{
+                padding: '20px',
+                background: '#ffffff',
+                borderRadius: '10px',
+                border: '1px solid #f0f0f0',
+                borderLeft: `3px solid ${statusColor}`
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <div style={{
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#262626'
+                  }}>
+                    {dimensionNames[key] || key}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{
+                      fontSize: '24px',
+                      fontWeight: '500',
+                      color: statusColor
+                    }}>
+                      {value.score.toFixed(0)}
+                    </div>
+                    <div style={{
+                      fontSize: '14px',
+                      color: '#8c8c8c'
+                    }}>
+                      points
+                    </div>
+                    {value.score >= 80 ? (
+                      <CheckCircleOutlined style={{ fontSize: '18px', color: '#52c41a' }} />
+                    ) : value.score >= 60 ? (
+                      <WarningOutlined style={{ fontSize: '18px', color: '#faad14' }} />
+                    ) : (
+                      <CloseCircleOutlined style={{ fontSize: '18px', color: '#ff4d4f' }} />
+                    )}
+                  </div>
+                </div>
+
+                {/* Progress Bar */}
+                <div style={{
+                  height: '6px',
+                  background: '#f5f5f5',
+                  borderRadius: '3px',
+                  overflow: 'hidden',
+                  marginBottom: '12px'
+                }}>
+                  <div style={{
+                    width: `${percentage}%`,
+                    height: '100%',
+                    background: statusColor,
+                    borderRadius: '3px',
+                    transition: 'width 0.3s ease'
+                  }} />
+                </div>
+
+                {/* Reasoning/Explanation */}
+                {value.reasoning && (
+                  <div style={{
+                    fontSize: '13px',
+                    color: '#595959',
+                    lineHeight: '1.6',
+                    padding: '12px',
+                    background: '#fafafa',
+                    borderRadius: '8px'
+                  }}>
+                    <div style={{
+                      fontSize: '12px',
+                      color: '#8c8c8c',
+                      marginBottom: '6px',
+                      fontWeight: '500'
+                    }}>
+                      💡 Score Reasoning:
+                    </div>
+                    {value.reasoning}
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
       </div>
 
@@ -92,9 +171,7 @@ const QualityReport: React.FC<QualityReportProps> = ({ evaluation }) => {
         <>
           <Divider />
           <div className="issues-section">
-            <h4>
-              <WarningOutlined style={{ color: '#faad14' }} /> Issues Found ({evaluation.issues.length})
-            </h4>
+            <Title level={5}>Issues Found ({evaluation.issues.length})</Title>
             <List
               size="small"
               dataSource={evaluation.issues}
@@ -113,7 +190,7 @@ const QualityReport: React.FC<QualityReportProps> = ({ evaluation }) => {
         <>
           <Divider />
           <div className="recommendations-section">
-            <h4>💡 Improvement Suggestions ({evaluation.recommendations.length})</h4>
+            <Title level={5}>Improvement Suggestions ({evaluation.recommendations.length})</Title>
             <List
               size="small"
               dataSource={evaluation.recommendations}

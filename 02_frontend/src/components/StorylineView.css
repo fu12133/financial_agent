@@ -2,44 +2,85 @@
   margin-bottom: 24px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+}
+
+.storyline-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.storyline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.storyline-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.storyline-icon {
+  font-size: 32px;
+}
+
+.storyline-title h4 {
+  margin: 0;
+}
+
+.storyline-content {
+  margin-top: 16px;
 }
 
 .storyline-summary {
+  margin-bottom: 20px;
   padding: 16px;
-  background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+  background: #f8f9fa;
   border-radius: 8px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #1890ff;
+}
+
+.storyline-summary p {
+  font-size: 15px;
+  line-height: 1.8;
+  text-align: justify;
+  margin-bottom: 0;
 }
 
 .timeline-section {
-  margin-top: 20px;
+  margin: 24px 0;
 }
 
 .timeline-item {
-  padding: 8px 0;
+  padding: 12px 0;
 }
 
 .timeline-date {
-  font-weight: bold;
-  color: #667eea;
+  font-weight: 600;
+  color: #1890ff;
   margin-bottom: 4px;
 }
 
 .timeline-event {
-  margin-bottom: 8px;
-  font-size: 16px;
+  margin: 4px 0;
 }
 
 .timeline-impact {
-  margin-bottom: 8px;
+  margin-top: 8px;
+  font-size: 14px;
+  color: #666;
 }
 
 .timeline-sources {
   margin-top: 8px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .storyline-details {
-  margin-top: 20px;
+  margin: 24px 0;
 }
 
 .detail-item {
@@ -50,25 +91,31 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin-top: 8px;
 }
 
 .storyline-sources {
   margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px dashed #e8e8e8;
 }
 
 .sources-list {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
 }
 
 .source-link {
-  color: #667eea;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #1890ff;
   text-decoration: none;
-  transition: all 0.3s;
+  font-size: 14px;
 }
 
 .source-link:hover {
-  color: #764ba2;
-  text-decoration: underline;
+  color: #096dd9;
 }

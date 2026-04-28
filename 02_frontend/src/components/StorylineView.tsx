@@ -18,15 +18,63 @@ const cleanText = (text: string): string => {
 
 const StorylineView: React.FC<StorylineViewProps> = ({ storyline }) => {
   return (
-    <Card className="storyline-card" title="📖 Event Timeline & Storyline">
-      <div className="storyline-summary">
-        <Paragraph strong>{cleanText(storyline.summary)}</Paragraph>
+    <div style={{
+      marginBottom: '20px',
+      padding: '32px',
+      background: '#ffffff',
+      borderRadius: '12px',
+      border: '1px solid #f0f0f0',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+    }}>
+      {/* Header */}
+      <div style={{ marginBottom: '24px' }}>
+        <div style={{
+          fontSize: '18px',
+          fontWeight: '600',
+          color: '#262626',
+          marginBottom: '4px'
+        }}>
+          Event Timeline & Storyline
+        </div>
+        <div style={{
+          fontSize: '13px',
+          color: '#8c8c8c'
+        }}>
+          Key events and development timeline
+        </div>
       </div>
 
-      <Divider />
+      {/* Summary */}
+      <div style={{ marginBottom: '24px' }}>
+        <div style={{
+          fontSize: '14px',
+          fontWeight: '600',
+          color: '#262626',
+          marginBottom: '10px'
+        }}>
+          Analysis Summary
+        </div>
+        <div style={{
+          fontSize: '14px',
+          color: '#595959',
+          lineHeight: '1.7'
+        }}>
+          {cleanText(storyline.summary)}
+        </div>
+      </div>
 
-      <div className="timeline-section">
-        <Title level={5}>Key Timeline</Title>
+      <Divider style={{ margin: '24px 0' }} />
+
+      {/* Key Timeline */}
+      <div style={{ marginBottom: '24px' }}>
+        <div style={{
+          fontSize: '14px',
+          fontWeight: '600',
+          color: '#262626',
+          marginBottom: '16px'
+        }}>
+          Key Timeline
+        </div>
         <Timeline
           items={storyline.key_events.map((event, index) => ({
             color: 'blue',
@@ -37,12 +85,12 @@ const StorylineView: React.FC<StorylineViewProps> = ({ storyline }) => {
                 <div className="timeline-event">
                   <Text strong>{cleanText(event.event)}</Text>
                 </div>
-                <div className="timeline-impact">
+                <div className="timeline-impact" style={{ marginTop: '8px' }}>
                   <Tag color="purple">Impact</Tag>
                   {cleanText(event.impact)}
                 </div>
                 {event.source_urls && event.source_urls.length > 0 && (
-                  <div className="timeline-sources">
+                  <div className="timeline-sources" style={{ marginTop: '8px' }}>
                     {event.source_urls.slice(0, 2).map((url, idx) => (
                       <a
                         key={idx}
@@ -50,6 +98,7 @@ const StorylineView: React.FC<StorylineViewProps> = ({ storyline }) => {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="source-link"
+                        style={{ marginRight: '12px', fontSize: '12px', color: '#1890ff' }}
                       >
                         <LinkOutlined /> Source {idx + 1}
                       </a>
@@ -62,35 +111,80 @@ const StorylineView: React.FC<StorylineViewProps> = ({ storyline }) => {
         />
       </div>
 
-      <Divider />
+      <Divider style={{ margin: '24px 0' }} />
 
-      <div className="storyline-details">
-        <div className="detail-item">
-          <Title level={5}>Key Participants</Title>
-          <div className="players-tags">
+      {/* Details Section */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        {/* Key Participants */}
+        <div>
+          <div style={{
+            fontSize: '14px',
+            fontWeight: '600',
+            color: '#262626',
+            marginBottom: '12px'
+          }}>
+            Key Participants
+          </div>
+          <div className="players-tags" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
             {storyline.key_players.map((player, idx) => (
-              <Tag key={idx} color="blue">{player}</Tag>
+              <Tag key={idx} color="blue" style={{ fontSize: '13px', padding: '4px 12px' }}>{player}</Tag>
             ))}
           </div>
         </div>
 
-        <div className="detail-item">
-          <Title level={5}>Cause and Effect</Title>
-          <Paragraph>{cleanText(storyline.cause_effect)}</Paragraph>
+        {/* Cause and Effect */}
+        <div>
+          <div style={{
+            fontSize: '14px',
+            fontWeight: '600',
+            color: '#262626',
+            marginBottom: '10px'
+          }}>
+            Cause and Effect
+          </div>
+          <div style={{
+            fontSize: '14px',
+            color: '#595959',
+            lineHeight: '1.7'
+          }}>
+            {cleanText(storyline.cause_effect)}
+          </div>
         </div>
 
-        <div className="detail-item">
-          <Title level={5}>Development Timeline</Title>
-          <Paragraph>{cleanText(storyline.timeline)}</Paragraph>
+        {/* Development Timeline */}
+        <div>
+          <div style={{
+            fontSize: '14px',
+            fontWeight: '600',
+            color: '#262626',
+            marginBottom: '10px'
+          }}>
+            Development Timeline
+          </div>
+          <div style={{
+            fontSize: '14px',
+            color: '#595959',
+            lineHeight: '1.7'
+          }}>
+            {cleanText(storyline.timeline)}
+          </div>
         </div>
       </div>
 
+      {/* Reference Sources */}
       {storyline.source_urls && storyline.source_urls.length > 0 && (
         <>
-          <Divider />
-          <div className="storyline-sources">
-            <Title level={5}>Reference Sources</Title>
-            <div className="sources-list">
+          <Divider style={{ margin: '24px 0' }} />
+          <div>
+            <div style={{
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#262626',
+              marginBottom: '12px'
+            }}>
+              Reference Sources
+            </div>
+            <div className="sources-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {storyline.source_urls.slice(0, 5).map((url, idx) => (
                 <a
                   key={idx}
@@ -98,15 +192,16 @@ const StorylineView: React.FC<StorylineViewProps> = ({ storyline }) => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="source-link"
+                  style={{ fontSize: '13px', color: '#1890ff' }}
                 >
-                  <LinkOutlined /> {url.substring(0, 60)}...
+                  <LinkOutlined /> {url.substring(0, 80)}{url.length > 80 ? '...' : ''}
                 </a>
               ))}
             </div>
           </div>
         </>
       )}
-    </Card>
+    </div>
   )
 }
 

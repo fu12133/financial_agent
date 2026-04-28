@@ -130,12 +130,12 @@ template: |
     "overall_assessment": {{
       "total_score": "CALCULATE: Sum of all 6 dimension scores (financial_impact + operational_impact + market_impact + regulatory_impact + strategic_impact + future_outlook). Range: -60 to 60",
       "recommendation": "Buy/Hold/Sell",
-      "confidence": Float from 0 to 1,
+      "confidence": "Float from 0.0 to 1.0. Calculate based on: (1) News quantity and quality (0-0.3): >10 high-quality news = 0.3, 5-10 news = 0.2, <5 news = 0.1; (2) Evidence clarity (0-0.3): Clear causal relationships and concrete data = 0.3, moderate evidence = 0.2, weak/ambiguous evidence = 0.1; (3) Analysis consistency (0-0.2): Dimension scores align with narrative = 0.2, minor inconsistencies = 0.1, major contradictions = 0.0; (4) Source reliability (0-0.2): Multiple credible sources per dimension = 0.2, some sources missing = 0.1, poor source coverage = 0.0. Example: Good news volume (0.3) + moderate evidence (0.2) + consistent analysis (0.2) + good sources (0.2) = 0.9",
+      "confidence_justification": "Brief explanation (50-100 words) justifying the confidence score by referencing the four criteria: news quantity, evidence clarity, analysis consistency, and source reliability. Explain which factors contributed most to the final confidence value.",
       "summary": "Overall summary",
       "key_insights": ["Insight 1", "Insight 2", "Insight 3"],
       "source_urls": ["Key URL1", "Key URL2", "Key URL3"]
     }}
-  }}
 
   **CRITICAL INSTRUCTIONS**:
   1. ALL OUTPUT MUST BE IN ENGLISH

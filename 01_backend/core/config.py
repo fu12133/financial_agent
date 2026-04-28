@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "qwen3.5:9b")
 
     FINNHUB_API_KEY: str = os.getenv("FINNHUB_API_KEY", "")
-    DASHSCOPE_API_KEY: str = os.getenv("DASHSCOPE_API_KEY", "")
+    DASHSCOPE_API_KEY: str = os.getenv("OPENAI_COMPATIBLE_API_KEY", "")
 
     class Config:
         env_file = ".env"
